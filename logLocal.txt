@@ -1,0 +1,16 @@
+
+
+26/05/2021 23:24:00 ------------------------------------------>
+
+ Error al conectar a la Base de Datos. 
+SQLSTATE[HY000] [1045] Access denied for user 'kleveren_appelportaldeformacion'@'localhost' (using password: YES)
+
+26/05/2021 23:26:19 ------------------------------------------>
+
+ Error al conectar a la Base de Datos. 
+SQLSTATE[HY000] [1045] Access denied for user 'kleveren_appelportaldeformacion'@'localhost' (using password: YES)
+
+26/05/2021 23:26:19 ------------------------------------------>
+
+ Error al conectar a la Base de Datos en en método Init(). 
+hola

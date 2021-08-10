@@ -1,0 +1,6 @@
+[26-May-2021 23:56:49 America/Argentina/Buenos_Aires] PHP Recoverable fatal error:  Object of class PDOStatement could not be converted to string in /home/kleveren/public_html/merlin.com.es/sincronizadorFormadores.php on line 20
+[26-May-2021 23:56:53 America/Argentina/Buenos_Aires] PHP Recoverable fatal error:  Object of class PDOStatement could not be converted to string in /home/kleveren/public_html/merlin.com.es/sincronizadorFormadores.php on line 20
+[26-May-2021 23:58:01 America/Argentina/Buenos_Aires] PHP Recoverable fatal error:  Object of class PDOStatement could not be converted to string in /home/kleveren/public_html/merlin.com.es/sincronizadorFormadores.php on line 22
+[26-May-2021 23:58:08 America/Argentina/Buenos_Aires] PHP Recoverable fatal error:  Object of class PDOStatement could not be converted to string in /home/kleveren/public_html/merlin.com.es/sincronizadorFormadores.php on line 22
+[26-May-2021 23:58:11 America/Argentina/Buenos_Aires] PHP Recoverable fatal error:  Object of class PDOStatement could not be converted to string in /home/kleveren/public_html/merlin.com.es/sincronizadorFormadores.php on line 22
+[26-May-2021 23:58:13 America/Argentina/Buenos_Aires] PHP Recoverable fatal error:  Object of class PDOStatement could not be converted to string in /home/kleveren/public_html/merlin.com.es/sincronizadorFormadores.php on line 22
