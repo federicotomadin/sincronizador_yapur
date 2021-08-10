@@ -2,7 +2,6 @@
  require('envio_mail/send_mail.php');
 
 
-
 date_default_timezone_set('America/Argentina/Buenos_Aires');
 
 init();
@@ -19,7 +18,6 @@ function init() {
 
         try {
 
-            
             sincronizar();
 
         } catch (Exception $e) {
@@ -40,7 +38,7 @@ function init() {
             'Error al intentar obtener los datos del ERP'
         );
 
-        // enviar_email();
+         enviar_email();
     }
 }
 
@@ -49,15 +47,15 @@ function get_db_connection() {
     try {
 
         //Local
-        $server = "localhost";
-        $user =  "root";
-        $password = "";
-        $dbname = "c0080393_yapur";
-
         // $server = "localhost";
-        // $user =  "user_sincro";
-        // $password = "clave_sincro";
+        // $user =  "root";
+        // $password = "";
         // $dbname = "c0080393_yapur";
+
+        $server = "localhost";
+        $user =  "user_sincro";
+        $password = "clave_sincro";
+        $dbname = "c0080393_yapur";
 
         // Establecer parámetros de conexión a la BD
         // $server = "localhost";
@@ -126,7 +124,7 @@ function sincronizar() {
         $totalElements = $data->page->totalElements;
         $contadorArticulos = 0; // Cantidad de artículos procesados
         
-        // marcar_envio_email();
+         marcar_envio_email();
 
 
     } catch (Exception $e) {
@@ -304,8 +302,6 @@ $stmtUpdateDescriptionERP->bindParam(':descripcionProductoERP', $descripcionProd
                 $stmtProducto->execute();
                 $producto = $stmtProducto->fetch();
 
-                
-     
 
                 if ($producto) $artId = $producto['id_product']; 
 
@@ -334,7 +330,7 @@ $stmtUpdateDescriptionERP->bindParam(':descripcionProductoERP', $descripcionProd
 
                 $descripcionProductoERP = $productERP->descripcion;
 
-               // $stmtUpdateDescriptionERP->execute(); 
+                //$stmtUpdateDescriptionERP->execute(); 
 
                 if($productoBaseDeDatos != '') {
                     $descripcionProductoDB = $productoBaseDeDatos[0]['descripcion_ERP'];
@@ -372,7 +368,6 @@ $stmtUpdateDescriptionERP->bindParam(':descripcionProductoERP', $descripcionProd
               
                 }                                     
      
-       
                 // Comprobar que el producto esté activo
                 if ($listaArticulos[$i]->articulo->publicaWeb == 'S') {       
         
@@ -511,10 +506,8 @@ $stmtUpdateDescriptionERP->bindParam(':descripcionProductoERP', $descripcionProd
                             $stmtActivarDesactivar->execute();
                         }
                     }
-
                 }
 
-          
 
                 // Cuenta las modificaciones realizadas
                 if ($stmtPrecio->rowCount() > 0 || 
