@@ -79,3 +79,8 @@ SQLSTATE[HY000] [1045] Access denied for user ''@'localhost' (using password: NO
 
  Error al conectar a la Base de Datos. 
 SQLSTATE[HY000] [1045] Access denied for user ''@'localhost' (using password: NO)
+
+11/08/2021 00:26:49 ------------------------------------------>
+
+ Error al conectar a la Base de Datos. 
+SQLSTATE[HY000] [1045] Access denied for user 'user_sincro'@'localhost' (using password: YES)

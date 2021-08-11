@@ -101,7 +101,7 @@ function enviar_email_producto_nuevo_a_modificar($datos) {
     $config = get_config_productos_agregados();
 
     if ($config['send_mail']) {
-        send_email_productos_nuevos($config['from'], $config['pass'], $config['to'], $config['replyTo'], $datos);
+        send_email_productos_nuevos($config['from'], $config['pass'], $config['to'], $config['cc'], $datos);
         $config['send_mail'] = 1;
         set_config_productos_agregados($config);
     }
@@ -133,7 +133,7 @@ function set_config_productos_agregados($config) {
     fclose($fp);
 }
 
-function send_email_productos_nuevos($from, $pass, $to, $replyTo, $nuevosProductosAgregados) {
+function send_email_productos_nuevos($from, $pass, $to, $cc, $nuevosProductosAgregados) {
 
     $mail = new PHPMailer(true);
 
@@ -151,7 +151,13 @@ function send_email_productos_nuevos($from, $pass, $to, $replyTo, $nuevosProduct
         //Recipients
         $mail->setFrom($from);
         $mail->addAddress($to);
-        $mail->addReplyTo($replyTo);
+        $arreglo = array(explode(",", $cc));
+
+        foreach($arreglo as $recipient){
+           for ($k = 0; $k < count($recipient); $k++) { 
+            $mail->addAddress($recipient[$k]);
+           }
+         }
 
         $tabla =   "<table style='width:100%'>
                        <tr>

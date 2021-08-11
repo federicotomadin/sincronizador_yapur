@@ -47,15 +47,15 @@ function get_db_connection() {
     try {
 
         //Local
-        // $server = "localhost";
-        // $user =  "root";
-        // $password = "";
-        // $dbname = "c0080393_yapur";
-
         $server = "localhost";
-        $user =  "user_sincro";
-        $password = "clave_sincro";
+        $user =  "root";
+        $password = "";
         $dbname = "c0080393_yapur";
+
+        // $server = "localhost";
+        // $user =  "user_sincro";
+        // $password = "clave_sincro";
+        // $dbname = "c0080393_yapur";
 
         // Establecer parámetros de conexión a la BD
         // $server = "localhost";
@@ -305,13 +305,13 @@ $stmtUpdateDescriptionERP->bindParam(':descripcionProductoERP', $descripcionProd
 
                 if ($producto) $artId = $producto['id_product']; 
 
-
+ 
                 if($producto) {
-                    $descripcionProducto = $db->query("SELECT * FROM ps_product_lang WHERE id_product=$artId");
-                    $productoBaseDeDatos = $descripcionProducto->fetchAll();
+                        $descripcionProducto = $db->query("SELECT * FROM ps_product_lang WHERE id_product=$artId");
+                        $productoBaseDeDatos = $descripcionProducto->fetchAll();
+                  
                 }
 
-        
            
                 $linkDescripcion = $listaArticulos[$i]
                 ->articulo
@@ -327,7 +327,7 @@ $stmtUpdateDescriptionERP->bindParam(':descripcionProductoERP', $descripcionProd
                     )
                 );
 
-
+            
                 $descripcionProductoERP = $productERP->descripcion;
 
                 //$stmtUpdateDescriptionERP->execute(); 
@@ -338,13 +338,17 @@ $stmtUpdateDescriptionERP->bindParam(':descripcionProductoERP', $descripcionProd
                     $descripcionProductoDB = '';
                 }
               
+
+      
                 $banderaProductoConDistintaDescripcion = false;
 
                 //Pregunto si la descripcion del producto que viene del ERP es la misma que el producto en base de datos
-                if($descripcionProductoERP != $descripcionProductoDB) {                
+                if($descripcionProductoERP != $descripcionProductoDB) {        
+                    
 
-                   if ($listaArticulos[$i]->articulo->publicaWeb == 'S') {    
-                        
+                   if ($listaArticulos[$i]->articulo->publicaWeb == 'S' && $artId != null && $artId != '') {    
+
+
                         //si no es la misma elimino el producto de la base de datos en las tres tablas que despues se inserta 
                         //y dejo que el proceso siga corriendo porque despues lo carga
                         $eliminarProductoDePs_product = "DELETE FROM ps_product WHERE id_product=$artId";
@@ -366,7 +370,10 @@ $stmtUpdateDescriptionERP->bindParam(':descripcionProductoERP', $descripcionProd
                         $banderaProductoConDistintaDescripcion = true;
                    }  
               
-                }                                     
+                }     
+                
+           
+ 
      
                 // Comprobar que el producto esté activo
                 if ($listaArticulos[$i]->articulo->publicaWeb == 'S') {       
@@ -508,7 +515,7 @@ $stmtUpdateDescriptionERP->bindParam(':descripcionProductoERP', $descripcionProd
                     }
                 }
 
-
+          
                 // Cuenta las modificaciones realizadas
                 if ($stmtPrecio->rowCount() > 0 || 
                         $stmtStock->rowCount() > 0 ||
