@@ -108,6 +108,21 @@ function enviar_email_producto_nuevo_a_modificar($datos) {
 
 }
 
+function bloquear_envio_email_productos_nuevos() {
+
+    $config = get_config_productos_agregados();
+
+        $config['send_mail'] = 1;
+        set_config_productos_agregados($config);        
+}
+
+function desbloquear_envio_email_productos_nuevos() {
+
+    $config = get_config_productos_agregados();
+        $config['send_mail'] = 1;
+        set_config_productos_agregados($config);        
+}
+
 function get_config_productos_agregados() {
       
     $file = __DIR__ . '/configProductosNuevos.ini';

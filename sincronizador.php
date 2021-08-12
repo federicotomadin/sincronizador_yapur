@@ -47,15 +47,15 @@ function get_db_connection() {
     try {
 
         //Local
-        $server = "localhost";
-        $user =  "root";
-        $password = "";
-        $dbname = "c0080393_yapur";
-
         // $server = "localhost";
-        // $user =  "user_sincro";
-        // $password = "clave_sincro";
+        // $user =  "root";
+        // $password = "";
         // $dbname = "c0080393_yapur";
+
+        $server = "localhost";
+        $user =  "user_sincro";
+        $password = "clave_sincro";
+        $dbname = "c0080393_yapur";
 
         // Establecer parámetros de conexión a la BD
         // $server = "localhost";
@@ -124,7 +124,11 @@ function sincronizar() {
         $totalElements = $data->page->totalElements;
         $contadorArticulos = 0; // Cantidad de artículos procesados
         
+        //Se cancela el envio de email
          marcar_envio_email();
+         bloquear_envio_email_productos_nuevos();
+
+  
 
 
     } catch (Exception $e) {
@@ -348,7 +352,6 @@ $stmtUpdateDescriptionERP->bindParam(':descripcionProductoERP', $descripcionProd
 
                    if ($listaArticulos[$i]->articulo->publicaWeb == 'S' && $artId != null && $artId != '') {    
 
-
                         //si no es la misma elimino el producto de la base de datos en las tres tablas que despues se inserta 
                         //y dejo que el proceso siga corriendo porque despues lo carga
                         $eliminarProductoDePs_product = "DELETE FROM ps_product WHERE id_product=$artId";
@@ -368,6 +371,8 @@ $stmtUpdateDescriptionERP->bindParam(':descripcionProductoERP', $descripcionProd
                         array_push($nuevosProductosAgregados, array('PrecioFinal'=> $listaArticulos[$i]->prFinal));
          
                         $banderaProductoConDistintaDescripcion = true;
+
+                        desbloquear_envio_email_productos_nuevos();
                    }  
               
                 }     
