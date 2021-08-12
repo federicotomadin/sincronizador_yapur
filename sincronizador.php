@@ -570,7 +570,10 @@ $stmtUpdateDescriptionERP->bindParam(':descripcionProductoERP', $descripcionProd
         echo 'Actualizados: '. $filasActualizadas."\n";
         echo 'Insertados: '. $filasInsertadas."\n";
 
-        enviar_email_producto_nuevo_a_modificar($nuevosProductosAgregados);
+       if (!empty($nuevosProductosAgregados)) {
+            enviar_email_producto_nuevo_a_modificar($nuevosProductosAgregados);
+        }
+       
 
 
         // Tiempo final del proceso
