@@ -38,7 +38,7 @@ function init() {
             'Error al intentar obtener los datos del ERP'
         );
 
-         enviar_email();
+        enviar_email();
     }
 }
 
@@ -47,10 +47,10 @@ function get_db_connection() {
     try {
 
         //Local
-        // $server = "localhost";
-        // $user =  "root";
-        // $password = "";
-        // $dbname = "c0080393_yapur";
+        //$server = "localhost";
+        //$user =  "root";
+        //$password = "";
+        //$dbname = "c0080393_yapur";
 
         $server = "localhost";
         $user =  "user_sincro";
@@ -64,7 +64,7 @@ function get_db_connection() {
         // $dbname = "c0080393_yapur";
 
         // Conectar
-        $db = new PDO("mysql:host=$server;dbname=$dbname", $user, $password);
+        $db = new PDO("mysql:host=$server;dbname=$dbname;charset=utf8", $user, $password);
 
         // Establecer el nivel de errores a EXCEPTION
         $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -125,11 +125,7 @@ function sincronizar() {
         $contadorArticulos = 0; // Cantidad de artículos procesados
         
         //Se cancela el envio de email
-         marcar_envio_email();
-         bloquear_envio_email_productos_nuevos();
-
-  
-
+        marcar_envio_email();
 
     } catch (Exception $e) {
         // Relanzar la excepción para un nuevo intento de conexión
@@ -139,16 +135,16 @@ function sincronizar() {
 
     /************************** Preparar sentencias SQL ***************************/
 
-    // Consulta para obtener un producto
-    $queryProducto = 'SELECT id_product, active 
-                      FROM ps_product 
-                      WHERE reference=:codigo';
+    // Obtiene datos del producto actual
+    $queryProducto = 'SELECT p.id_product, descripcion_ERP, active 
+                        FROM ps_product p, ps_product_lang pl 
+                        WHERE reference = :codigo
+                            AND pl.id_product = p.id_product';
 
     $stmtProducto = $db->prepare($queryProducto);
     $stmtProducto->bindParam(':codigo', $codigo);
 
-
-
+    // Establece la fecha de actualización del producto a la actual
     $queryActualizarFecha = 'UPDATE ps_product_shop ps, ps_product p
                             SET ps.date_upd = NOW(),  
                                 p.date_upd = NOW()
@@ -158,7 +154,7 @@ function sincronizar() {
     $stmtActualizarFecha = $db->prepare($queryActualizarFecha);
     $stmtActualizarFecha->bindParam(':artId', $artId);
 
-
+    // Marca el producto actual como activo/inactivo
     $queryActivarDesactivar = 'UPDATE ps_product_shop, ps_product
                               SET ps_product_shop.active=:activo, 
                                    ps_product.active=:activo
@@ -169,7 +165,7 @@ function sincronizar() {
     $stmtActivarDesactivar->bindParam(':activo', $activo);
     $stmtActivarDesactivar->bindParam(':artId', $artId);
 
-
+    // Actualiza el precio del producto actual
     $queryPrecio = 'UPDATE ps_product_shop, ps_product
                           SET ps_product_shop.price=:precio, 
                                ps_product.price=:precio
@@ -181,7 +177,7 @@ function sincronizar() {
     $stmtPrecio->bindParam(':artId', $artId);
 
 
-    // Sentencia para actualizar el stock de un producto
+    // Atualizar el stock del producto actual
     $queryStock = 'UPDATE ps_stock_available 
                    SET quantity=:cantidad, physical_quantity=:cantidad_fisica 
                    WHERE id_product=:artId';
@@ -190,6 +186,22 @@ function sincronizar() {
     $stmtStock->bindParam(':cantidad', $cantidad);
     $stmtStock->bindParam(':cantidad_fisica', $cantidad); // Se establecen iguales
     $stmtStock->bindParam(':artId', $artId);
+
+    
+    // Eliminar el producto actual
+    $queryDeleteProduct = 'DELETE p, ps, pl, sa
+                            FROM ps_product p, 
+                                ps_product_shop ps, 
+                                ps_product_lang pl, 
+                                ps_stock_available sa
+                            WHERE p.id_product = :artId
+                                AND ps.id_product = p.id_product
+                                AND pl.id_product = p.id_product
+                                AND sa.id_product = p.id_product';
+
+    $stmtDeleteProduct = $db->prepare($queryDeleteProduct);
+    $stmtDeleteProduct->bindParam(':artId', $artId);
+
 
     // El resto de sentencias permiten insertar un producto
 
@@ -224,20 +236,6 @@ function sincronizar() {
     $stmtInsertProduct->bindParam(':codigo', $codigo);
 
 
-
-$stmtPrecio = $db->prepare($queryPrecio);
-$stmtPrecio->bindParam(':precio', $precio);
-$stmtPrecio->bindParam(':artId', $artId);
-
-$queryUpdateDescripcionERP = 'UPDATE ps_product_lang
-                                SET descripcion_ERP=:descripcionProductoERP
-                                WHERE id_product =:artId';
-
-$stmtUpdateDescriptionERP = $db->prepare($queryUpdateDescripcionERP);
-$stmtUpdateDescriptionERP->bindParam(':artId', $artId);
-$stmtUpdateDescriptionERP->bindParam(':descripcionProductoERP', $descripcionProductoERP);
-
-
     $queryInsertDescription = 'INSERT INTO ps_product_lang (
                                               id_product,
                                               id_shop, 
@@ -247,7 +245,7 @@ $stmtUpdateDescriptionERP->bindParam(':descripcionProductoERP', $descripcionProd
                                               descripcion_ERP,
                                               link_rewrite, 
                                               name,
-                                              available_now, 
+                                              available_now 
 
                                             ) 
                                 VALUES (:artId, 1, 1, :descripcion, 
@@ -258,7 +256,7 @@ $stmtUpdateDescriptionERP->bindParam(':descripcionProductoERP', $descripcionProd
     $stmtInsertDescription->bindParam(':artId', $artId);
     $stmtInsertDescription->bindParam(':descripcion', $descripcion);
     $stmtInsertDescription->bindParam(':descripcion_corta', $descripcion_corta);
-    $stmtInsertDescription->bindParam(':descripcion_ERP', $descripcion_ERP);
+    $stmtInsertDescription->bindParam(':descripcion_ERP', $nombre);
     $stmtInsertDescription->bindParam(':link_rewrite', $linkRewrite);
     $stmtInsertDescription->bindParam(':nombre', $nombre);
     $stmtInsertDescription->bindParam(':disponible', $disponible);
@@ -286,7 +284,6 @@ $stmtUpdateDescriptionERP->bindParam(':descripcionProductoERP', $descripcionProd
     $filasActualizadas = 0;
     $filasInsertadas = 0;
     $nuevosProductosAgregados = array();
-    $productoBaseDeDatos = '';
     
     // Productos omitidos
     $omitidos = ['LYV58050', 'CYP99970'];
@@ -302,83 +299,43 @@ $stmtUpdateDescriptionERP->bindParam(':descripcionProductoERP', $descripcionProd
 
             for($i = 0; $i < $size; $i++) {
 
+                $productoERP = null;
+                $productoDB = null;
+
                 $codigo = $listaArticulos[$i]->articulo->codigo;
                 $stmtProducto->execute();
-                $producto = $stmtProducto->fetch();
-
-
-                if ($producto) $artId = $producto['id_product']; 
-
- 
-                if($producto) {
-                        $descripcionProducto = $db->query("SELECT * FROM ps_product_lang WHERE id_product=$artId");
-                        $productoBaseDeDatos = $descripcionProducto->fetchAll();
-                  
-                }
-
-           
-                $linkDescripcion = $listaArticulos[$i]
-                ->articulo
-                ->_links
-                ->self
-                ->href;
-
-                $productERP = json_decode(
-                    @file_get_contents(
-                        $linkDescripcion, 
-                        false, 
-                        $contexto
-                    )
-                );
-
-            
-                $descripcionProductoERP = $productERP->descripcion;
-
-                //$stmtUpdateDescriptionERP->execute(); 
-
-                if($productoBaseDeDatos != '') {
-                    $descripcionProductoDB = $productoBaseDeDatos[0]['descripcion_ERP'];
-                } else {
-                    $descripcionProductoDB = '';
-                }
-              
-
-      
-                $banderaProductoConDistintaDescripcion = false;
-
-                //Pregunto si la descripcion del producto que viene del ERP es la misma que el producto en base de datos
-                if($descripcionProductoERP != $descripcionProductoDB) {        
-                    
-
-                   if ($listaArticulos[$i]->articulo->publicaWeb == 'S' && $artId != null && $artId != '') {    
-
-                        //si no es la misma elimino el producto de la base de datos en las tres tablas que despues se inserta 
-                        //y dejo que el proceso siga corriendo porque despues lo carga
-                        $eliminarProductoDePs_product = "DELETE FROM ps_product WHERE id_product=$artId";
-                        $prepareEliminarProductoDePs_product = $db->prepare($eliminarProductoDePs_product);
-
-                        $eliminarProductoDePs_product_shop = "DELETE FROM ps_product_shop WHERE id_product=$artId";
-                        $prepareEliminarProductoDePs_product_shop = $db->prepare($eliminarProductoDePs_product_shop);
-
-                        $eliminarProductoDePs_product_lang = "DELETE FROM ps_product_lang WHERE id_product=$artId";
-                        $prepareEliminarProductoDePs_product_lang = $db->prepare($eliminarProductoDePs_product_lang);
-
-                        $responseEliminarProductoDePs_product = $prepareEliminarProductoDePs_product->execute();   
-                        $responseEliminarProductoDePs_product_shop = $prepareEliminarProductoDePs_product_shop->execute();   
-                        $responseEliminarProductoDePs_product_lang = $prepareEliminarProductoDePs_product_lang->execute();   
-
-                        array_push($nuevosProductosAgregados,$productERP);
-                        array_push($nuevosProductosAgregados, array('PrecioFinal'=> $listaArticulos[$i]->prFinal));
-         
-                        $banderaProductoConDistintaDescripcion = true;
-
-                        desbloquear_envio_email_productos_nuevos();
-                   }  
-              
-                }     
+                $productoDB = $stmtProducto->fetch();
                 
-           
- 
+                if ($productoDB) {
+
+                    $artId = $productoDB['id_product'];
+
+                    // Obtener el producto con su descripción desde el ERP
+                    $linkDescripcion = $listaArticulos[$i]
+                                        ->articulo
+                                        ->_links
+                                        ->self
+                                        ->href;
+
+                    $productoERP = json_decode(
+                        @file_get_contents(
+                            $linkDescripcion, 
+                            false, 
+                            $contexto
+                        )
+                    );
+
+                    // Comprobar cambio en la descripción del producto
+                    if ($productoDB['descripcion_ERP'] != $productoERP->descripcion) {
+
+                        // Eliminar producto de la BD
+                        $stmtDeleteProduct->execute();
+
+                        // Se establece el producto a null para su inserción más abajo
+                        $productoDB = null;
+                    }
+                }
+
      
                 // Comprobar que el producto esté activo
                 if ($listaArticulos[$i]->articulo->publicaWeb == 'S') {       
@@ -405,40 +362,39 @@ $stmtUpdateDescriptionERP->bindParam(':descripcionProductoERP', $descripcionProd
 
                     if ($cantidad > 0) $disponible = 'En stock'; 
         
-                    
-                    // Comprobar que el producto esté en la BD     
-                    
-                                                                      
-                    if (!$producto) {
+                    // Comprobar que el producto esté en la BD        
+                    if (!$productoDB) {
 
-                        // Crear producto
+                        // Insertar un nuevo producto
 
                         try {
-                            // Obtener el producto
-                            $linkDescripcion = $listaArticulos[$i]
-                                                  ->articulo
-                                                  ->_links
-                                                  ->self
-                                                  ->href;
+                            // Comprobar que el producto no se haya obtenido antes
+                            if (!$productoERP) {
 
-                  
-                  
+                                // Obtener el producto
+                                $linkDescripcion = $listaArticulos[$i]
+                                                    ->articulo
+                                                    ->_links
+                                                    ->self
+                                                    ->href;              
+                    
 
-                            $product = json_decode(
-                                            @file_get_contents(
-                                                $linkDescripcion, 
-                                                false, 
-                                                $contexto
-                                            )
-                                        );
+                                $productoERP = json_decode(
+                                                @file_get_contents(
+                                                    $linkDescripcion, 
+                                                    false, 
+                                                    $contexto
+                                                )
+                                            );
 
-                            if (!$product) throw new Exception();                        
+                                if (!$productoERP) throw new Exception();
+                            }                        
 
-                            $nombre = $product->descripcion;
+                            $nombre = $productoERP->descripcion;
                             $linkRewrite = format_link_rewrite($nombre);
-                            $codigo = $product->codigo;
+                            $codigo = $productoERP->codigo;
                             $descripcion = '';
-                            $descripcion_corta = get_description_html($product->descripcion);
+                            $descripcion_corta = get_description_html($productoERP->descripcion);
                             $precio = $listaArticulos[$i]->prFinal;
 
                             
@@ -449,21 +405,14 @@ $stmtUpdateDescriptionERP->bindParam(':descripcionProductoERP', $descripcionProd
                                 $stmtInsertProduct->execute();
                                 $artId = $db->lastInsertId();
 
-                                $stmtInsertProductShop->execute();
-                                
+                                $stmtInsertProductShop->execute();                                
                                 $stmtInsertDescription->execute();
                                 $stmtInsertStock->execute();
 
-                                //El producto con descripcion cambiada que se eliminó se agrega como inactivo para darle tiempo 
-                                //al personal de cargar las fotos y despues se activa a mano. 
-                                if($banderaProductoConDistintaDescripcion) {
-                                    $activo = 0;
-                                    $stmtActivarDesactivar->execute();
-                                }
-
                                 $db->commit();
                                 
-                                // Incrementa registro de inserciones   
+                                array_push($nuevosProductosAgregados, $productoERP);
+                                // Incrementa registro de inserciones
                                 $filasInsertadas++;
                               
                             } catch (Exception $e) {
@@ -484,11 +433,10 @@ $stmtUpdateDescriptionERP->bindParam(':descripcionProductoERP', $descripcionProd
 
                     } else {
 
-
                         if (!in_array($codigo, $omitidos)) {
 
                             // Si el producto está en la BD, pero inactivo, se lo activa
-                            if ($producto['active'] == 0) {
+                            if ($productoDB['active'] == 0) {
                                 $activo = 1;
                                 $stmtActivarDesactivar->execute();
 
@@ -496,13 +444,11 @@ $stmtUpdateDescriptionERP->bindParam(':descripcionProductoERP', $descripcionProd
 
                             // Se actualiza el stock
                             $stmtStock->execute();
-
                         } 
 
                         // Se actualiza el precio
                         $precio = $listaArticulos[$i]->prFinal;
                         $stmtPrecio->execute();
-
                     }
 
 
@@ -511,15 +457,13 @@ $stmtUpdateDescriptionERP->bindParam(':descripcionProductoERP', $descripcionProd
                     if (!in_array($codigo, $omitidos)) {
                     
                         // Comprobar que el producto esté en la BD
-                        if ($producto) {
-                            // Si el producto viene con el campo publicaWeb="N",
-                            // marcarlo como inactivo
+                        if ($productoDB) {
+                            // Si el producto viene con el campo publicaWeb="N", marcarlo como inactivo
                             $activo = 0;
                             $stmtActivarDesactivar->execute();
                         }
                     }
                 }
-
           
                 // Cuenta las modificaciones realizadas
                 if ($stmtPrecio->rowCount() > 0 || 
@@ -534,7 +478,6 @@ $stmtUpdateDescriptionERP->bindParam(':descripcionProductoERP', $descripcionProd
 
                 // Mostrar barra de progreso
                 echo progress_bar($contadorArticulos++, $totalElements);
-
             }
  
 
@@ -566,15 +509,14 @@ $stmtUpdateDescriptionERP->bindParam(':descripcionProductoERP', $descripcionProd
             
         }
 
-        echo "\n";
-        echo 'Actualizados: '. $filasActualizadas."\n";
-        echo 'Insertados: '. $filasInsertadas."\n";
-
-       if (!empty($nuevosProductosAgregados)) {
+        // Enviar email con los productos agregados
+        if (!empty($nuevosProductosAgregados)) {
             enviar_email_producto_nuevo_a_modificar($nuevosProductosAgregados);
         }
-       
 
+        echo "\n";
+        echo 'Actualizados: '. $filasActualizadas."\n";
+        echo 'Insertados: '. $filasInsertadas."\n";    
 
         // Tiempo final del proceso
         $end_time = microtime(true);
