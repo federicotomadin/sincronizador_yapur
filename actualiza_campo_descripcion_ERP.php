@@ -12,7 +12,13 @@ function get_db_connection() {
         $server = "localhost";
         $user =  "root";
         $password = "";
-        $dbname = "aonline_ps_test";
+        $dbname = "c0080393_yapur";
+
+        //Server
+        // $server = "localhost";
+        // $user =  "user_sincro";
+        // $password = "clave_sincro";
+        // $dbname = "c0080393_yapur";
 
         // Conectar
         $db = new PDO("mysql:host=$server;dbname=$dbname;charset=utf8", $user, $password);
