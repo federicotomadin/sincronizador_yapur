@@ -174,12 +174,14 @@ function send_email_productos_nuevos($from, $pass, $to, $cc, $nuevosProductosAgr
            }
          }
 
-        $tabla =   "<table style='width:100%'>
-                       <tr>
-                        <th>CODIGO</th>
-                        <th>TITULO</th>
-                        <th>PRECIO</th>
-                    </tr>";
+        $tabla =   '<table style="width:100%; border: 1px solid black; border-collapse: collapse;">
+                        <thead style="background-color: gray;">
+                            <tr>
+                                <th style="border: 1px solid black;">CODIGO</th>
+                                <th style="border: 1px solid black;">DESCRIPCION</th>
+                                <th style="border: 1px solid black;">PRECIO</th>
+                            </tr>
+                        </thead><tbody>';
 
 
         for ($k = 0; $k < count($nuevosProductosAgregados)-1; $k++) { 
@@ -190,35 +192,29 @@ function send_email_productos_nuevos($from, $pass, $to, $cc, $nuevosProductosAgr
             $precioFinal = $nuevosProductosAgregados[$k+1]['PrecioFinal'];
               
 
-        $tabla .= "<tr>
-                        <td>$codigo</td>
-                        <td>$descripcion</td>
-                        <td>$precioFinal</td>
-                    </tr>";
-        $k++;
+            $tabla .= '<tr>
+                            <td style="text-align: center; border: 1px solid black;">'.$codigo.'</td>
+                            <td style="text-align: center; border: 1px solid black;">'.$descripcion.'</td>
+                            <td style="text-align: right; border: 1px solid black;">'.$precioFinal.'</td>
+                        </tr>';
+            $k++;
         }
         
-        $tabla .= "</table>";
+        $tabla .= "</tbody></table>";
 
         //Content
         $mail->isHTML(true);                                  
         $mail->Subject = 'Se agregaron nuevos productos en tienda online';
         $mensaje    = 'Hay nuevos productos que se han sincronizado desde sistema a tienda online:';
-        $mail->Body = "
-                        <html>        
-                            <head>    
-                            <style>
-                                table, th, td {
-                                border: 1px solid black;
-                                }
-                                </style>                            
+        $mail->Body = '<html>        
+                            <head>                                
                             <title>Se agregaron nuevos productos</title>        
                             </head>
-                            <body>
-                                <h1>$mensaje</h1><br>
-                                <h4>$tabla</h4><br>
-                            </body>    
-                        </html>";
+                            <body style="text-align: center;">
+                                <h2>'.$mensaje.'</h2><br>'.
+                                $tabla
+                            .'</body>    
+                        </html>';
 
         $mail->send();
         echo "Mensaje enviado correctamente\n";

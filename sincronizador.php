@@ -47,15 +47,15 @@ function get_db_connection() {
     try {
 
         //Local
-        $server = "localhost";
-        $user =  "root";
-        $password = "";
-        $dbname = "c0080393_yapur";
+        //$server = "localhost";
+        //$user =  "root";
+        //$password = "";
+        //$dbname = "c0080393_yapur";
 
-        // $server = "localhost";
-        // $user =  "user_sincro";
-        // $password = "clave_sincro";
-        // $dbname = "c0080393_yapur";
+        $server = "localhost";
+        $user =  "user_sincro";
+        $password = "clave_sincro";
+        $dbname = "c0080393_yapur";
 
         // Establecer parámetros de conexión a la BD
         // $server = "localhost";
