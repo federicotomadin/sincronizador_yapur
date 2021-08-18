@@ -121,14 +121,9 @@ function sincronizar() {
                 $codigo = $listaArticulos[$i]->articulo->codigo;
 
                 $stmtProducto->execute();
-                $producto = $stmtProducto->fetch();
+                $productos = $stmtProducto->fetchAll();                
 
-                if ($producto) {
-
-                    $artId = $producto['id_product'];
-
-                    //echo "producto: codigo = $codigo  - id = $artId\n";
-
+                if ($productos) {
                     $linkDescripcion = $listaArticulos[$i]
                                         ->articulo
                                         ->_links
@@ -143,10 +138,14 @@ function sincronizar() {
                         )
                     );
 
-                    
-                    $descripcionProductoERP = $productERP->descripcion;
+                    foreach ($productos as $prod) {
+                        $artId = $prod['id_product'];                        
+                        $descripcionProductoERP = $productERP->descripcion;
+                        $stmtUpdateDescriptionERP->execute();
+                    }
 
-                    $stmtUpdateDescriptionERP->execute();
+                } else {
+                    //echo "No se encontró: codigo: $codigo - artId: $artId\n";
                 }
 
                 // Mostrar barra de progreso
