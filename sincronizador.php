@@ -47,15 +47,15 @@ function get_db_connection() {
     try {
 
         //Local
-        // $server = "localhost";
-        // $user =  "root";
-        // $password = "";
-        // $dbname = "c0080393_yapur";
-
         $server = "localhost";
-        $user =  "user_sincro";
-        $password = "clave_sincro";
-        $dbname = "c0080393_yapur4";
+        $user =  "root";
+        $password = "";
+        $dbname = "c0080393_yapur";
+
+        // $server = "localhost";
+        // $user =  "user_sincro";
+        // $password = "clave_sincro";
+        // $dbname = "c0080393_yapur";
 
         // Establecer parámetros de conexión a la BD
         // $server = "localhost";
@@ -136,13 +136,15 @@ function sincronizar() {
     /************************** Preparar sentencias SQL ***************************/
 
     // Obtiene datos del producto actual
+
     $queryProducto = 'SELECT p.id_product, descripcion_ERP, active 
                         FROM ps_product p, ps_product_lang pl 
                         WHERE reference = :codigo
                             AND pl.id_product = p.id_product';
 
+
     $stmtProducto = $db->prepare($queryProducto);
-    $stmtProducto->bindParam(':codigo', $codigo);
+   // $stmtProducto->bindParam(':codigo', $codigo);
 
     // Establece la fecha de actualización del producto a la actual
     $queryActualizarFecha = 'UPDATE ps_product_shop ps, ps_product p
@@ -326,10 +328,15 @@ function sincronizar() {
                     );
 
                     // Comprobar cambio en la descripción del producto
-                    if ($productoDB['descripcion_ERP'] != $productoERP->descripcion) {
+                  //  if ($productoDB['descripcion_ERP'] != $productoERP->descripcion) {
 
-                        // Eliminar producto de la BD
-                        $stmtDeleteProduct->execute();
+                    if ($productoDB['descripcion_ERP'] = ' ') {
+                    
+
+                       // Eliminar producto de la BD
+                       // $stmtDeleteProduct->execute();
+
+                        write_inform_file('codigo - ' . $codigo . ' id producto en base de datos - '.$productoDB['id_product']);
 
                         // Se establece el producto a null para su inserción más abajo
                         $productoDB = null;
@@ -616,6 +623,24 @@ function write_log_file($description, $detail) {
         or die("Error al escribir en el archivo");
 
     fclose($logFile);
+}
+
+
+// Guardar logs en archivo de texto plano
+function write_inform_file($description) {
+    // Abrir el archivo de logs
+    $informFile = fopen("inform.txt", 'a') 
+                    or die("Error al crear archivo");
+
+    $header = date("d/m/Y H:i:s")
+                ." ------------------------------------------>\n\n";
+
+    $msg = $description;
+
+    fwrite($informFile, "\n\n$header $msg") 
+        or die("Error al escribir en el archivo");
+
+    fclose($informFile);
 }
 
 function get_description_html($description) {

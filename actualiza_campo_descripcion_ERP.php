@@ -18,7 +18,7 @@ function get_db_connection() {
         $server = "localhost";
         $user =  "user_sincro";
         $password = "clave_sincro";
-        $dbname = "c0080393_yapur4";
+        $dbname = "c0080393_yapur";
 
         // Conectar
         $db = new PDO("mysql:host=$server;dbname=$dbname;charset=utf8", $user, $password);
