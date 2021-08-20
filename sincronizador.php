@@ -46,7 +46,6 @@ function get_db_connection() {
 
     try {
 
-        //Local
         $server = "localhost";
         $user =  "root";
         $password = "";
@@ -306,11 +305,9 @@ function sincronizar() {
 
                 $codigo = $listaArticulos[$i]->articulo->codigo;
                 $stmtProducto->execute();
-                $productoDB = $stmtProducto->fetch();
+                $productosDB = $stmtProducto->fetchAll();
                 
-                if ($productoDB) {
-
-                    $artId = $productoDB['id_product'];
+                if ($productosDB) {                   
 
                     // Obtener el producto con su descripción desde el ERP
                     $linkDescripcion = $listaArticulos[$i]
@@ -327,26 +324,23 @@ function sincronizar() {
                         )
                     );
 
-                    // Comprobar cambio en la descripción del producto
-                  //  if ($productoDB['descripcion_ERP'] != $productoERP->descripcion) {
+                    foreach ($productosDB as $productoDB) {
+                        $artId = $productoDB['id_product'];
 
-                    if ($productoDB['descripcion_ERP'] = ' ') {
-                    
+                        // Comprobar cambio en la descripción del producto
+                        if ($productoDB['descripcion_ERP'] != $productoERP->descripcion) {
 
-                       // Eliminar producto de la BD
-                       // $stmtDeleteProduct->execute();
+                            // Eliminar producto de la BD
+                            $stmtDeleteProduct->execute();
 
-                        write_inform_file('codigo - ' . $codigo . ' id producto en base de datos - '.$productoDB['id_product']);
-
-                        // Se establece el producto a null para su inserción más abajo
-                        $productoDB = null;
+                            // Se establece el producto a null para su inserción más abajo
+                            $productoDB = null;
+                        }
                     }
                 }
-
      
                 // Comprobar que el producto esté activo
                 if ($listaArticulos[$i]->articulo->publicaWeb == 'S') {       
-        
 
                     // Obtener datos de stock
                     $artIdStock = $listaArticulos[$i]->articulo->artId;                
@@ -357,7 +351,6 @@ function sincronizar() {
                                     $contexto
                                 )
                             );
-
           
                     // Sumar stock del artículo
                     $cantidad = 0;                
@@ -370,7 +363,7 @@ function sincronizar() {
                     if ($cantidad > 0) $disponible = 'En stock'; 
         
                     // Comprobar que el producto esté en la BD        
-                    if (!$productoDB) {
+                    if (!$productosDB) {
 
                         // Insertar un nuevo producto
 
@@ -442,34 +435,46 @@ function sincronizar() {
 
                     } else {
 
-                        if (!in_array($codigo, $omitidos)) {
+                        foreach ($productosDB as $productoDB) {
 
-                            // Si el producto está en la BD, pero inactivo, se lo activa
-                            if ($productoDB['active'] == 0) {
-                                $activo = 1;
-                                $stmtActivarDesactivar->execute();
+                            $artId = $productoDB['id_product'];
 
-                            }
+                            if (!in_array($codigo, $omitidos)) {                            
 
-                            // Se actualiza el stock
-                            $stmtStock->execute();
-                        } 
+                                // Si el producto está en la BD, pero inactivo, se lo activa
+                                if ($productoDB['active'] == 0) {
+                                    $activo = 1;
+                                    $stmtActivarDesactivar->execute();
 
-                        // Se actualiza el precio
-                        $precio = $listaArticulos[$i]->prFinal;
-                        $stmtPrecio->execute();
+                                }
+
+                                // Se actualiza el stock
+                                $stmtStock->execute();
+                                
+                            } 
+
+                            // Se actualiza el precio
+                            $precio = $listaArticulos[$i]->prFinal;
+                            $stmtPrecio->execute();
+                        }
                     }
 
 
                 } else {
 
                     if (!in_array($codigo, $omitidos)) {
-                    
+
                         // Comprobar que el producto esté en la BD
-                        if ($productoDB) {
-                            // Si el producto viene con el campo publicaWeb="N", marcarlo como inactivo
-                            $activo = 0;
-                            $stmtActivarDesactivar->execute();
+                        if ($productosDB) {
+
+                            foreach ($productosDB as $productoDB) {
+                                $artId = $productoDB['id_product'];                   
+
+                                // Si el producto viene con el campo publicaWeb="N", 
+                                // marcarlo como inactivo
+                                $activo = 0;
+                                $stmtActivarDesactivar->execute();
+                            }
                         }
                     }
                 }
@@ -478,9 +483,13 @@ function sincronizar() {
                 if ($stmtPrecio->rowCount() > 0 || 
                         $stmtStock->rowCount() > 0 ||
                             $stmtActivarDesactivar->rowCount() > 0) {
+                    
+                    foreach ($productosDB as $productoDB) {
 
-                    // Se cambia la fecha de actualización del registro
-                    $stmtActualizarFecha->execute();
+                        $artId = $productoDB['id_product']; 
+                        // Se cambia la fecha de actualización del registro
+                        $stmtActualizarFecha->execute();
+                    }
                     
                     $filasActualizadas++;
                 }
