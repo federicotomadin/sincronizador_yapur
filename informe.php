@@ -37,7 +37,7 @@ function get_db_connection() {
 
 $db = get_db_connection();
 
-$queryProducto = "Select prod.id_product, reference from ps_product prod 
+$queryProducto = "Select distinct prod.id_product, reference from ps_product prod 
 inner join ps_product_lang prod_lang on prod.id_product = prod_lang.id_product  
 where prod_lang.descripcion_ERP = '' ";
 
